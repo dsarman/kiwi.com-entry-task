@@ -74,7 +74,7 @@ target/
 
 # celery beat schedule file
 celerybeat-schedule
-
+W
 # dotenv
 .env
 
@@ -87,3 +87,6 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Pycharm
+.idea/
