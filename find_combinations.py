@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import fileinput
 import datetime
+import fileinput
 
 
 class Flight:
@@ -14,8 +14,8 @@ class Flight:
 
     def connects_to(self, flight) -> bool:
         if self.destination == flight.source:
-            difference = self.arrival - flight.departure
-            if difference.total_seconds() > 3600 and difference.total_seconds() < 14400:
+            difference = flight.departure - self.arrival
+            if difference.total_seconds() >= 3600 and difference.total_seconds() <= 14400:
                 return True
         return False
 
@@ -25,7 +25,7 @@ class Flight:
 
 
 class Matching:
-    def __init__(self, time_format):
+    def __init__(self, time_format="%Y-%m-%dT%H:%M:%S"):
         self.time_format = time_format
         self.flights = {}
         self.flights_count = 0
@@ -61,7 +61,7 @@ class FlightPath:
 
         for i in range(0, path_size - 1):
             existing_destination = self.path[i].destination
-            existing_source = self.path[i+1].source
+            existing_source = self.path[i + 1].source
             if existing_destination == self.path[path_size].destination and existing_source == flight.source:
                 return False
         self.path.append(flight)
@@ -70,13 +70,13 @@ class FlightPath:
     def __str__(self, *args, **kwargs):
         out = self.path[0].source
         path_size = len(self.path)
-        for i in range(1,path_size):
-            out +=  "-- " + self.path[i].flight_num + " -->" + self.path[i].destination
+        for i in range(0, path_size):
+            out += "-- " + self.path[i].flight_num + " -->" + self.path[i].destination
         return out
 
 
 def main() -> None:
-    matcher = Matching("%Y-%m-%dT%H:%M:%S")
+    matcher = Matching()
     input()  # Skip the first line
     for line in fileinput.input():
         matcher.parse_and_add(line)
@@ -93,8 +93,6 @@ def main() -> None:
 
     for path in paths:
         print(path)
-
-
 
 
 if __name__ == "__main__":
