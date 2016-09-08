@@ -2,13 +2,13 @@
 import argparse
 import copy
 import datetime
-import fileinput
+import sys
 from typing import List, Set
 
 
 class Flight:
     """
-    Class representation of one flight information
+    Class representation of one flight information.
     """
 
     def __init__(self, source: str, destination: str, departure: datetime.datetime, arrival: datetime.datetime,
@@ -57,7 +57,7 @@ class FlightPath:
         if not self.path[last_path_index].connects_to(flight):
             return False
 
-        for i in range(0, last_path_index):
+        for i in range(0, last_path_index + 1):
             existing_destination = self.path[i].destination
             existing_source = self.path[i].source
             if existing_destination == flight.destination and existing_source == flight.source:
@@ -67,9 +67,23 @@ class FlightPath:
 
     def get_last_flight(self):
         """
-        Returns last flight in path
+        Returns last flight in path.
         """
         return self.path[len(self.path) - 1]
+
+    def get_output_str(self):
+        """
+        Returns concise string representation of flight path.
+        """
+        out_str = ""
+        path_size = len(self.path)
+        for i in range(0, path_size):
+            out_str += self.path[i].flight_num
+            if i == path_size - 1:
+                out_str += "\n"
+            else:
+                out_str += ","
+        return out_str
 
     def __str__(self):
         out = self.path[0].source
@@ -90,14 +104,14 @@ class FlightPath:
         size = len(self.path)
         if size != len(other.path):
             return False
-        for i in range(0, size - 1):
+        for i in range(0, size):
             if not self.path[i] == other.path[i]:
                 return False
         return True
 
     def __hash__(self):
         hash_val = hash(self.path[0])
-        for i in range(1, len(self.path) - 1):
+        for i in range(1, len(self.path)):
             hash_val += hash(self.path[i])
         return hash_val
 
@@ -108,14 +122,14 @@ class Parser:
         self.flights = []
         self.flights_count = 0
 
-    def parse_file(self, ignore_first=True, file=None):
+    def parse_file(self, parse_all=False, file=None):
         """
-        Parses given file, or stdout if none is supplied
+        Parses given file, or stdout if none is supplied.
         :param ignore_first: If True, ignores first line
         """
-        if ignore_first:
+        if not parse_all:
             input()
-        for line in fileinput.input(file):
+        for line in sys.stdin:
             self.parse_and_add(line)
 
     def parse_line(self, line: str) -> Flight:
@@ -183,15 +197,20 @@ class Matcher:
         for i in range(0, len(self.data)):
             self.pairing()
 
+    def write_to_stdout(self):
+        for path in self.get_paths():
+            sys.stdout.write(path.get_output_str())
+
 
 def main() -> None:
+    arg_parser = argparse.ArgumentParser(description="Find connecting flights.")
+    arg_parser.add_argument('-a', dest="parse_all", action="store_true", help="Do not ignore first line of input.")
+    args = arg_parser.parse_args()
     parser = Parser()
-    parser.parse_file(ignore_first=True)
+    parser.parse_file(args.parse_all)
     matcher = Matcher(parser.flights)
     matcher.full_pairing()
-    paths = matcher.get_paths()
-    for path in paths:
-        print(path)
+    matcher.write_to_stdout()
 
 
 if __name__ == "__main__":
