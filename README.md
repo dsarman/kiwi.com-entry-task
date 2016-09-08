@@ -1,1 +1,1 @@
-# kiwi.com-entry-task
+Solution for entry task to https://pythonvikend.kiwi.com/.
